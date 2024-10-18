@@ -1,0 +1,30 @@
+name: Python Code Linter
+
+on:
+  push:
+    branches:
+      - "**" # matches every branch
+    paths:
+      - "**/*.py"
+
+jobs:
+  lint:
+    name: checkout
+    runs-on: ubuntu-20.04
+
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+
+      - uses: actions/setup-python@v2
+        with:
+          python-version: "3.10.15"
+
+      - name: install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Running isort.
+        run: isort --check-only  ./dags
+
+      - name: Running flake8
+        run: flake8 ./dags
