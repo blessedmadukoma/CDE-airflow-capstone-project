@@ -38,6 +38,7 @@ dnspython==2.7.0
 docutils==0.21.2
 email_validator==2.2.0
 exceptiongroup==1.2.2
+flake8==7.1.1
 Flask==2.2.5
 Flask-AppBuilder==4.5.0
 Flask-Babel==2.0.0
@@ -62,6 +63,7 @@ idna==3.10
 importlib_metadata==8.4.0
 importlib_resources==6.4.5
 inflection==0.5.1
+isort==5.13.2
 itsdangerous==2.2.0
 Jinja2==3.1.4
 jmespath==1.0.1
@@ -77,6 +79,7 @@ MarkupSafe==3.0.1
 marshmallow==3.23.0
 marshmallow-oneofschema==3.1.1
 marshmallow-sqlalchemy==0.28.2
+mccabe==0.7.0
 mdit-py-plugins==0.4.2
 mdurl==0.1.2
 methodtools==0.4.7
@@ -104,6 +107,7 @@ psutil==6.1.0
 psycopg2==2.9.10
 pycodestyle==2.12.1
 pycparser==2.22
+pyflakes==3.2.0
 Pygments==2.18.0
 PyJWT==2.9.0
 python-daemon==3.0.1
