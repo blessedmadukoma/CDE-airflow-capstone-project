@@ -3,7 +3,8 @@ name: Python Code Linter
 on:
   push:
     branches:
-      - "**" # matches every branch
+      # - "**" # matches every branch
+      - "main" # only when there is a PR to the main branch
     paths:
       - "**/*.py"
 

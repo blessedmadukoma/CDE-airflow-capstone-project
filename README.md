@@ -47,6 +47,8 @@
    docker-compose down
    ```
 
+**Note:** The project has CI/CD setup using GitHub Actions. The CI/CD pipeline runs the tests and checks the code quality on every PR to the main branch.
+
 ### DAG Graph:
 ![DAG View](docs/imgs/dag_graph.png)
 
