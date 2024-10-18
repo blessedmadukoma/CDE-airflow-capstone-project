@@ -1,8 +1,10 @@
-import requests
-import gzip
 import csv
-from airflow.providers.postgres.hooks.postgres import PostgresHook
+import gzip
 import os
+
+import requests
+from airflow.providers.postgres.hooks.postgres import PostgresHook
+
 # import psycopg2
 
 
