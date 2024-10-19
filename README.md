@@ -1,5 +1,10 @@
 # CoreSentiment - Stock Market Prediction Tool With Applied Sentiment Analysis
 
+### Project Description:
+CoreSentiment is a stock market prediction tool developed for a data consulting organization. It leverages sentiment analysis by using Wikipedia page views as a proxy for public interest in companies. The project assumes that an increase in page views indicates a positive sentiment and correlates with a rise in stock prices, while a decrease in views suggests declining interest and potential stock price drops.
+
+The project involves downloading hourly page view data, extracting relevant fields and page names, and loading the data into a database for analysis. The objective is to identify which company garnered the highest number of page views during the specified hour, providing insights into potential stock movements.
+
 ### Task Summary:
 - Download and extract the zip file containing the pageviews data for just one hour
 - Fetch the needed fields and pagenames only
