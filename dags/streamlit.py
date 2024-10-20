@@ -16,13 +16,14 @@ logging.info("Database url:", DATABASE_URL)
 def main():
     st.title("Pageviews Analysis")
 
-    # Perform analysis (this function should use the PostgresHook and query the data)
-    result = analyze_data(DATABASE_URL)
+    # Perform analysis
+    result = analyze_data(None, DATABASE_URL)
 
     company = result[0]
 
     st.write(
-        f"The company with the highest pageviews is: {company[0].capitalize()} with {company[1]} pageviews.")
+        f"The company with the highest pageviews is: \
+            {company[0].capitalize()} with {company[1]} pageviews.")
 
     # plot a graph of the data
     result = dict(result)

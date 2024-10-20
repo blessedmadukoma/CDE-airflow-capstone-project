@@ -89,12 +89,14 @@ def transform_data(companies: list, extracted_file: str) -> str:
     :returns:
         filtered_file: str - the path to the filtered file
 
-    >>>> Example: transform_data(['Google', 'Facebook', 'Amazon', 'Apple', 'Microsoft'], 'data/pageviews.txt')
+    >>>> Example: transform_data(['Google', 'Facebook', 'Amazon', \
+        'Apple', 'Microsoft'], 'data/pageviews.txt')
     Data transformed!
     'data/filtered_pageviews.csv'
     """
 
-    # using the unzipped file, find the pageviews that are related to the 5 companies
+    # using the unzipped file,
+    # find the pageviews that are related to the 5 companies
     filtered_data = []
 
     # Read through the extracted file and filter for the companies of interest
@@ -131,9 +133,6 @@ def load_data(filtered_file: str, PostgresHook=None, DATABASE_URL: str = None):
         filtered_file: str - the path to the filtered file
 
     :returns: None
-
-    >>>> Example: load_data('postgresql://airflow:airflow@postgres:5432/cde_capstone', 'data/filtered_pageviews.csv')
-    Data loaded successfully!
     """
 
     if PostgresHook is not None:
@@ -162,7 +161,8 @@ def load_data(filtered_file: str, PostgresHook=None, DATABASE_URL: str = None):
         next(reader)
         for row in reader:
             cursor.execute(
-                "INSERT INTO pageviews (company, pageviews) VALUES (%s, %s)", (row[0], row[1]))
+                "INSERT INTO pageviews (company, pageviews) \
+                    VALUES (%s, %s)", (row[0], row[1]))
 
     # commit the transaction
     conn.commit()
@@ -176,12 +176,13 @@ def load_data(filtered_file: str, PostgresHook=None, DATABASE_URL: str = None):
 # def analyze_data(DATABASE_URL: str = None):
 def analyze_data(PostgresHook=None, DATABASE_URL: str = None):
     # def analyze_data():
-    """analyze the data - find the company with the highest pageviews at that time
+    """analyze the data - company with highest pageviews at that time
     :params: None
     :returns: None
 
-    >>>> Example: analyze_data('postgresql://airflow:airflow@postgres:5432/cde_capstone')
-    On October 10, 2024 at 4pm, the company with highest pageviews: Google with 1000 page views
+    >>>> Example:
+    On October 10, 2024 at 4pm, the company with \
+        highest pageviews: Google with 1000 page views
     """
     # connect to the database
 
@@ -199,7 +200,10 @@ def analyze_data(PostgresHook=None, DATABASE_URL: str = None):
 
     # query the database to get the top 5 companies with the highest pageviews
     cursor.execute("""
-        SELECT company, MAX(pageviews) FROM pageviews GROUP BY company ORDER BY MAX(pageviews) DESC LIMIT 5;
+        SELECT company, MAX(pageviews)
+        FROM pageviews
+        GROUP BY company
+        ORDER BY MAX(pageviews) DESC LIMIT 5;
     """)
 
     # fetch the ONE record with the highest pageviews for that hour
@@ -216,7 +220,8 @@ def analyze_data(PostgresHook=None, DATABASE_URL: str = None):
     company = result[0]
 
     logging.info(
-        f"On October 10, 2024 at 4pm, the company with highest pageviews: {company[0]} with {company[1]} page views")
+        f"On October 10, 2024 at 4pm, the company with \
+highest pageviews: {company[0]} with {company[1]} page views")
 
     # return the result for visualization
     return result
