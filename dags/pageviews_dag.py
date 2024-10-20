@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 
 from airflow import DAG
 from airflow.operators.python import PythonOperator
+from airflow.providers.postgres.hooks.postgres import PostgresHook
 
 from helper import (analyze_data, download_data, extract_data, load_data,
                     transform_data)
@@ -19,7 +20,7 @@ default_args = {
 
 # DAG definition
 dag = DAG(
-    'my_pageviews_dag_3',
+    'pageviews_dag',
     default_args=default_args,
     description='A DAG to download, extract, \
         transform, and load pageviews data',
@@ -68,7 +69,7 @@ load_task = PythonOperator(
     task_id='load_pageviews',
     python_callable=load_data,
     # op_args=[DATABASE_URL, 'data/filtered_pageviews.csv'],
-    op_args=['data/filtered_pageviews.csv'],
+    op_args=['data/filtered_pageviews.csv', PostgresHook],
     dag=dag
 )
 
@@ -77,6 +78,7 @@ analyze_task = PythonOperator(
     task_id='analyze_pageviews',
     python_callable=analyze_data,
     # op_args=[DATABASE_URL],
+    op_args=[PostgresHook],
     dag=dag
 )
 

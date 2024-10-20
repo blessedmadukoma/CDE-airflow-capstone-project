@@ -3,17 +3,17 @@ import gzip
 import os
 
 import requests
-from airflow.providers.postgres.hooks.postgres import PostgresHook
 
-# import psycopg2
+import psycopg2
+import logging
 
 
 def download_data(URL: str) -> str:
     """download the data from the source
 
-    :params: 
+    :params:
         URL: str
-    :returns: 
+    :returns:
         download_path: str
 
     >>>> Example: download_data(WIKI_URL)
@@ -29,11 +29,10 @@ def download_data(URL: str) -> str:
 
     # if response is successful, write to file
     if response.status_code != 200:
+        logging.error("Failed to download data")
         raise Exception('Failed to download data')
 
     download_path = 'data/pageviews.gz'
-    # download_path = os.path.join(
-    #     os.getenv("AIRFLOW_HOME", "/opt/airflow"), "data/pageviews.gz")
 
     # Create the directory if it does not exist
     os.makedirs(os.path.dirname(download_path), exist_ok=True)
@@ -41,7 +40,7 @@ def download_data(URL: str) -> str:
     with open(download_path, 'wb') as f:
         f.write(response.content)
 
-    print('Data Downloaded Successfully!')
+    logging.info('Data Downloaded Successfully!')
 
     return download_path
 
@@ -49,10 +48,10 @@ def download_data(URL: str) -> str:
 def extract_data(file_path: str):
     """extract the data from the gzipped file
 
-    :params: 
+    :params:
         file_path: str - the path to the gzipped file
 
-    :returns: 
+    :returns:
         extracted_file: str - the path to the extracted file
 
     >>>> Example: extract_data('data/pageviews.gz')
@@ -72,9 +71,9 @@ def extract_data(file_path: str):
             # Create the output file and write to it
             with open(extracted_file, 'wb') as f_out:
                 f_out.write(f_in.read())
-        print(f"Extracted content to {extracted_file}")
+        logging.info(f"Extracted content to {extracted_file}")
     else:
-        print(f"The file {file_path} does not exist.")
+        logging.error(f"The file {file_path} does not exist.")
 
     return extracted_file
 
@@ -88,7 +87,7 @@ def transform_data(companies: list, extracted_file: str) -> str:
         companies: list - the list of companies to filter for
         extracted_file: str - the path to the extracted file
 
-    :returns:   
+    :returns:
         filtered_file: str - the path to the filtered file
 
     >>>> Example: transform_data(['Google', 'Facebook', 'Amazon', 'Apple', 'Microsoft'], 'data/pageviews.txt')
@@ -117,15 +116,15 @@ def transform_data(companies: list, extracted_file: str) -> str:
         for row in filtered_data:
             f_out.write(f"{row[0]},{row[1]}\n")
 
-    print("Data transformed!")
+    logging.info("Data transformed!")
 
     return filtered_file
 
 # data storage
 
 
-# def load_data(DATABASE_URL: str, filtered_file: str):
-def load_data(filtered_file: str):
+def load_data(filtered_file: str, PostgresHook=None, DATABASE_URL: str = None):
+    # def load_data(filtered_file: str):
     """load the filtered data into the database
 
     :params:
@@ -138,16 +137,15 @@ def load_data(filtered_file: str):
     Data loaded successfully!
     """
 
-    # print("Database connection: ", DATABASE_URL)
+    if PostgresHook is not None:
+        postgres_conn_id = 'DATABASE_URL'
 
-    # connect to the database
-    # conn = psycopg2.connect(DATABASE_URL)
+        pg_hook = PostgresHook(postgres_conn_id=postgres_conn_id)
 
-    postgres_conn_id = 'DATABASE_URL'
-
-    pg_hook = PostgresHook(postgres_conn_id=postgres_conn_id)
-
-    conn = pg_hook.get_conn()
+        conn = pg_hook.get_conn()
+    else:
+        # using psycopg2
+        conn = psycopg2.connect(DATABASE_URL)
 
     cursor = conn.cursor()
 
@@ -164,19 +162,21 @@ def load_data(filtered_file: str):
         reader = csv.reader(f)
         next(reader)
         for row in reader:
-            # print(f"Inserting row: {row[0]} => {row[1]}")
             cursor.execute(
                 "INSERT INTO pageviews (company, pageviews) VALUES (%s, %s)", (row[0], row[1]))
-            # print(f"Inserted!")
 
     # commit the transaction
     conn.commit()
 
-    print("Data loaded successfully!")
+    # Close the connection
+    cursor.close()
+
+    logging.info("Data loaded successfully!")
 
 
-# def analyze_data(DATABASE_URL: str):
-def analyze_data():
+# def analyze_data(DATABASE_URL: str = None):
+def analyze_data(PostgresHook=None, DATABASE_URL: str = None):
+    # def analyze_data():
     """analyze the data - find the company with the highest pageviews at that time
     :params: None
     :returns: None
@@ -186,25 +186,38 @@ def analyze_data():
     """
     # connect to the database
 
-    postgres_conn_id = 'DATABASE_URL'
+    if PostgresHook is not None:
+        postgres_conn_id = 'DATABASE_URL'
 
-    pg_hook = PostgresHook(postgres_conn_id=postgres_conn_id)
+        pg_hook = PostgresHook(postgres_conn_id=postgres_conn_id)
 
-    conn = pg_hook.get_conn()
-
-    # using psycopg2
-    # conn = psycopg2.connect(DATABASE_URL)
+        conn = pg_hook.get_conn()
+    else:
+        # using psycopg2
+        conn = psycopg2.connect(DATABASE_URL)
 
     cursor = conn.cursor()
 
-    # query the database
+    # query the database to get the top 5 companies with the highest pageviews
     cursor.execute("""
-        SELECT company, MAX(pageviews) FROM pageviews GROUP BY company ORDER BY MAX(pageviews) DESC LIMIT 1;
+        SELECT company, MAX(pageviews) FROM pageviews GROUP BY company ORDER BY MAX(pageviews) DESC LIMIT 5;
     """)
 
     # fetch the ONE record with the highest pageviews for that hour
-    result = cursor.fetchone()
+    # result = cursor.fetchone()
 
-    # print the result
-    print(
-        f"On October 10, 2024 at 4pm, the company with highest pageviews: {result[0]} with {result[1]} page views")
+    # fetch the three records with the highest pageviews for that hour
+    result = cursor.fetchall()
+
+    # Close the connection
+    cursor.close()
+    conn.close()
+
+    # get the company with the highest pageviews
+    company = result[0]
+
+    logging.info(
+        f"On October 10, 2024 at 4pm, the company with highest pageviews: {company[0]} with {company[1]} page views")
+
+    # return the result for visualization
+    return result
