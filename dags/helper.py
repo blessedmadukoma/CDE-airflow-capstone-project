@@ -1,11 +1,10 @@
 import csv
 import gzip
+import logging
 import os
 
-import requests
-
 import psycopg2
-import logging
+import requests
 
 
 def download_data(URL: str) -> str:
