@@ -4,4 +4,6 @@ dc_up:
 dc_down:
 	docker compose down -v
 
-.PHONY: dc_up dc_down
+streamlit:
+	streamlit run ./dags/streamlit.py
+.PHONY: dc_up dc_down streamlit
